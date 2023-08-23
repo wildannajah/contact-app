@@ -2,33 +2,49 @@ import Head from 'next/head'
 import { Inter } from 'next/font/google'
 import { GET_CONTACT_LIST } from '@/query'
 import { useQuery } from '@apollo/client'
-import { type ContactList } from '@/query/type'
+import { type Contact, type ContactList } from '@/types/contact'
+import { useDispatch, useSelector } from '@/redux/store'
+import { addFavorit, deleteFavorit } from '@/redux/slices/favorit'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export default function Home() {
-  const favoriteContactConditions = {
-    id: { _in: [4687, 4688] },
-    first_name: { _like: '%%' }
-  }
-
-  const regularContactConditions = {
-    id: { _nin: [4687, 4688] },
-    first_name: { _like: '%%' }
-  }
-
-  const { loading, error, data } = useQuery<ContactList>(GET_CONTACT_LIST, {
+  const dispatch = useDispatch()
+  const favorit = useSelector((state) => state.favorit.contacts)
+  const favoritIds = favorit.map(({ id }) => id)
+  const { loading, error, data, refetch } = useQuery<ContactList>(GET_CONTACT_LIST, {
     variables: {
       limit: 10,
       offset: 0,
       order_by: { created_at: 'asc' },
-      where_favorit: favoriteContactConditions,
-      where_regular: regularContactConditions
+      where: {
+        id: { _nin: favoritIds },
+        first_name: { _like: '%%' }
+      }
     }
   })
   if (loading) return <p>Loading...</p>
   if (error != null) return <p>Error: {error.message}</p>
-  const { favorit, regular } = data ?? { favorit: [], regular: [] }
+  const { contact } = data ?? { contact: [] }
+
+  const handleDeleteFavorit = async (contact: Contact) => {
+    try {
+      dispatch(deleteFavorit(contact))
+      await refetch()
+    } catch (error) {
+      console.error('Error deleting favorit:', error)
+    }
+  }
+
+  const handleAddFavorit = async (contact: Contact) => {
+    try {
+      dispatch(addFavorit(contact))
+      await refetch()
+    } catch (error) {
+      console.error('Error adding favorit:', error)
+    }
+  }
+
   return (
     <>
       <Head>
@@ -39,19 +55,31 @@ export default function Home() {
       </Head>
       <main className={`${inter.className}`}>
         <div>favorit:</div>
-        {favorit.map(({ id, first_name, last_name, phones }) => (
-          <div key={id}>
-            {first_name} {last_name}
-            {phones.map(({ number }) => (
-              <div key={number}>{number}</div>
-            ))}
+        {favorit.map((item) => (
+          <div key={item.id}>
+            {item.id}
+            {item.first_name}
+            <button
+              onClick={async () => {
+                await handleDeleteFavorit(item)
+              }}
+            >
+              Delete button
+            </button>
           </div>
         ))}
         <div>regular:</div>
-        {regular.map(({ id, first_name }) => (
-          <div key={id}>
-            {id}
-            {first_name}
+        {contact.map((item) => (
+          <div key={item.id}>
+            {item.id}
+            {item.first_name}
+            <button
+              onClick={async () => {
+                await handleAddFavorit(item)
+              }}
+            >
+              Add button
+            </button>
           </div>
         ))}
       </main>

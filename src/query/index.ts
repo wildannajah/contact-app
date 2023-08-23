@@ -6,24 +6,14 @@ export const GET_CONTACT_LIST = gql`
     $limit: Int
     $offset: Int
     $order_by: [contact_order_by!]
-    $where_favorit: contact_bool_exp
-    $where_regular: contact_bool_exp
+    $where: contact_bool_exp
   ) {
-    favorit: contact(distinct_on: $distinct_on, order_by: $order_by, where: $where_favorit) {
-      created_at
-      first_name
-      id
-      last_name
-      phones {
-        number
-      }
-    }
-    regular: contact(
+    contact(
       distinct_on: $distinct_on
       limit: $limit
       offset: $offset
       order_by: $order_by
-      where: $where_regular
+      where: $where
     ) {
       created_at
       first_name
