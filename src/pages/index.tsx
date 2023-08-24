@@ -3,17 +3,16 @@ import { Inter } from 'next/font/google'
 import { GET_CONTACT_LIST } from '@/query'
 import { useQuery } from '@apollo/client'
 import { type ContactList } from '@/types/contact'
-import { useDispatch, useSelector } from '@/redux/store'
-import { addFavorit, deleteFavorit } from '@/redux/slices/favorit'
+import { useSelector } from '@/redux/store'
 import { type ChangeEvent, useEffect, useState } from 'react'
 import { useDebounce } from 'usehooks-ts'
+import ContactCard from '@/section/contact-list/contact-card'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export default function Home() {
   const [value, setValue] = useState<string>('')
   const debouncedValue = useDebounce<string>(value, 1000)
-  const dispatch = useDispatch()
   const favoritIds = useSelector((state) => state.favorit.contactIds)
 
   const contactConditions = {
@@ -60,22 +59,6 @@ export default function Home() {
 
   if (error != null) return <p>Error: {error.message}</p>
 
-  const handleDeleteFavorit = (contact: number) => {
-    try {
-      dispatch(deleteFavorit(contact))
-    } catch (error) {
-      console.error('Error deleting favorit:', error)
-    }
-  }
-
-  const handleAddFavorit = (contact: number) => {
-    try {
-      dispatch(addFavorit(contact))
-    } catch (error) {
-      console.error('Error adding favorit:', error)
-    }
-  }
-
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     setValue(event.target.value)
   }
@@ -94,32 +77,12 @@ export default function Home() {
           <input type="text" value={value} onChange={handleChange} />
         </div>
         <div>favorit:</div>
-        {favorit.map(({ id, first_name }) => (
-          <div key={id}>
-            {id}
-            {first_name}
-            <button
-              onClick={() => {
-                handleDeleteFavorit(id)
-              }}
-            >
-              Delete button
-            </button>
-          </div>
+        {favorit.map((contact) => (
+          <ContactCard key={contact.id} contact={contact} favorit />
         ))}
         <div>regular:</div>
-        {regular.map(({ id, first_name }) => (
-          <div key={id}>
-            {id}
-            {first_name}
-            <button
-              onClick={() => {
-                handleAddFavorit(id)
-              }}
-            >
-              Add button
-            </button>
-          </div>
+        {regular.map((contact) => (
+          <ContactCard key={contact.id} contact={contact} favorit={false} />
         ))}
       </main>
     </>
