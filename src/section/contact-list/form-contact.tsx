@@ -1,19 +1,34 @@
-import { CREATE_CONTACT, GET_CONTACT_LIST } from '@/query'
-import { useMutation } from '@apollo/client'
-import { useState } from 'react'
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { CREATE_CONTACT, DETAIL_CONTACT, GET_CONTACT_LIST } from '@/query'
+import { type Phone } from '@/types/contact'
+import { useMutation, useQuery } from '@apollo/client'
+import { useEffect, useState } from 'react'
 
-interface PhoneNumber {
-  number: string
+interface FormContactProps {
+  id?: number
 }
 
-export default function FormContact() {
+export default function FormContact({ id }: FormContactProps) {
   const [createContact, { data, loading, error }] = useMutation(CREATE_CONTACT, {
     refetchQueries: [GET_CONTACT_LIST]
   })
+  const {
+    data: dataDetail,
+    loading: loadingDetail,
+    error: errorDetail
+  } = useQuery(DETAIL_CONTACT, { variables: { id }, skip: id == null })
   const [firstname, setFisrtname] = useState<string>('')
   const [lastname, setlastname] = useState<string>('')
   const [show, setShow] = useState<boolean>(false)
-  const [phoneNumbers, setPhoneNumbers] = useState<PhoneNumber[]>([{ number: '' }])
+  const [phoneNumbers, setPhoneNumbers] = useState<Phone[]>([{ number: '' }])
+
+  useEffect(() => {
+    if (dataDetail !== undefined) {
+      setFisrtname(dataDetail.contact_by_pk.first_name)
+      setlastname(dataDetail.contact_by_pk.last_name)
+      setPhoneNumbers(dataDetail.contact_by_pk.phones)
+    }
+  }, [dataDetail])
 
   const handleFirstnameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFisrtname(event.target.value)
@@ -47,8 +62,6 @@ export default function FormContact() {
   if (loading) return <p>Loading...</p>
 
   if (error != null) return <p>Error: {error.message}</p>
-
-  console.log(data)
 
   return (
     <div>
