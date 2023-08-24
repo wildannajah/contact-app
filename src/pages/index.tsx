@@ -2,49 +2,78 @@ import Head from 'next/head'
 import { Inter } from 'next/font/google'
 import { GET_CONTACT_LIST } from '@/query'
 import { useQuery } from '@apollo/client'
-import { type Contact, type ContactList } from '@/types/contact'
+import { type ContactList } from '@/types/contact'
 import { useDispatch, useSelector } from '@/redux/store'
 import { addFavorit, deleteFavorit } from '@/redux/slices/favorit'
+import { useEffect } from 'react'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export default function Home() {
   const dispatch = useDispatch()
-  const favorit = useSelector((state) => state.favorit.contacts)
-  const favoritIds = favorit.map(({ id }) => id)
+  const favoritIds = useSelector((state) => state.favorit.contactIds)
+  const search = ''
+
+  const contactConditions = {
+    _or: [
+      { first_name: { _ilike: `%${search}%` } },
+      { last_name: { _ilike: `%${search}%` } },
+      { phones: { number: { _ilike: `%${search}%` } } }
+    ]
+  }
+
+  const favoriteContactConditions = {
+    ...contactConditions,
+    id: { _in: favoritIds }
+  }
+
+  const regularContactConditions = {
+    ...contactConditions,
+    id: { _nin: favoritIds }
+  }
+
   const { loading, error, data, refetch } = useQuery<ContactList>(GET_CONTACT_LIST, {
     variables: {
       limit: 10,
       offset: 0,
       order_by: { created_at: 'asc' },
-      where: {
-        id: { _nin: favoritIds },
-        first_name: { _like: '%%' }
+      where_favorit: favoriteContactConditions,
+      where_regular: regularContactConditions
+    },
+    notifyOnNetworkStatusChange: true
+  })
+
+  useEffect(() => {
+    const refetching = async () => {
+      try {
+        await refetch()
+      } catch (error) {
+        console.error('Error refetching:', error)
       }
     }
-  })
-  if (loading) return <p>Loading...</p>
-  if (error != null) return <p>Error: {error.message}</p>
-  const { contact } = data ?? { contact: [] }
+    void refetching()
+  }, [error, favoritIds, refetch])
 
-  const handleDeleteFavorit = async (contact: Contact) => {
+  if (loading) return <p>Loading...</p>
+
+  if (error != null) return <p>Error: {error.message}</p>
+
+  const handleDeleteFavorit = (contact: number) => {
     try {
       dispatch(deleteFavorit(contact))
-      await refetch()
     } catch (error) {
       console.error('Error deleting favorit:', error)
     }
   }
 
-  const handleAddFavorit = async (contact: Contact) => {
+  const handleAddFavorit = (contact: number) => {
     try {
       dispatch(addFavorit(contact))
-      await refetch()
     } catch (error) {
       console.error('Error adding favorit:', error)
     }
   }
-
+  const { favorit, regular } = data ?? { favorit: [], regular: [] }
   return (
     <>
       <Head>
@@ -55,13 +84,13 @@ export default function Home() {
       </Head>
       <main className={`${inter.className}`}>
         <div>favorit:</div>
-        {favorit.map((item) => (
-          <div key={item.id}>
-            {item.id}
-            {item.first_name}
+        {favorit.map(({ id, first_name }) => (
+          <div key={id}>
+            {id}
+            {first_name}
             <button
-              onClick={async () => {
-                await handleDeleteFavorit(item)
+              onClick={() => {
+                handleDeleteFavorit(id)
               }}
             >
               Delete button
@@ -69,13 +98,13 @@ export default function Home() {
           </div>
         ))}
         <div>regular:</div>
-        {contact.map((item) => (
-          <div key={item.id}>
-            {item.id}
-            {item.first_name}
+        {regular.map(({ id, first_name }) => (
+          <div key={id}>
+            {id}
+            {first_name}
             <button
-              onClick={async () => {
-                await handleAddFavorit(item)
+              onClick={() => {
+                handleAddFavorit(id)
               }}
             >
               Add button

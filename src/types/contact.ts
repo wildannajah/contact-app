@@ -1,5 +1,6 @@
 export interface ContactList {
-  contact: Contact[]
+  favorit: Contact[]
+  regular: Contact[]
 }
 
 export interface Contact {
