@@ -7,11 +7,14 @@ import { useSelector } from '@/redux/store'
 import { type ChangeEvent, useEffect, useState } from 'react'
 import { useDebounce } from 'usehooks-ts'
 import ContactCard from '@/section/contact-list/contact-card'
+import Modal from 'react-modal'
+import FormContact from '@/section/contact-list/form-contact'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export default function Home() {
   const [value, setValue] = useState<string>('')
+  const [showModal, setShowModal] = useState(false)
   const debouncedValue = useDebounce<string>(value, 1000)
   const favoritIds = useSelector((state) => state.favorit.contactIds)
 
@@ -84,6 +87,23 @@ export default function Home() {
         {regular.map((contact) => (
           <ContactCard key={contact.id} contact={contact} favorit={false} />
         ))}
+        <button
+          onClick={() => {
+            setShowModal((prevState) => !prevState)
+          }}
+        >
+          open modal
+        </button>
+        <Modal
+          isOpen={showModal}
+          onRequestClose={() => {
+            setShowModal(false)
+          }}
+          ariaHideApp={false}
+          contentLabel="Example Modal"
+        >
+          <FormContact />
+        </Modal>
       </main>
     </>
   )

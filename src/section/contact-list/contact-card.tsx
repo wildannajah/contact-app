@@ -29,11 +29,11 @@ export default function ContactCard({ contact, favorit }: ContactCardProps) {
     }
   }
 
-  console.log(data)
-
   if (loading) return <p>Loading...</p>
 
   if (error != null) return <p>Error: {error.message}</p>
+
+  console.log(data)
 
   const { id, first_name, last_name } = contact
   return (
@@ -47,6 +47,7 @@ export default function ContactCard({ contact, favorit }: ContactCardProps) {
       >
         {favorit ? 'remove' : 'add'}
       </button>
+      {/* <button onClick={()=>console.log()}>edit</button> */}
       <button onClick={async () => await deleteContact({ variables: { id } })}>delete</button>
     </div>
   )
