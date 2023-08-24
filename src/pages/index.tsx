@@ -5,20 +5,22 @@ import { useQuery } from '@apollo/client'
 import { type ContactList } from '@/types/contact'
 import { useDispatch, useSelector } from '@/redux/store'
 import { addFavorit, deleteFavorit } from '@/redux/slices/favorit'
-import { useEffect } from 'react'
+import { type ChangeEvent, useEffect, useState } from 'react'
+import { useDebounce } from 'usehooks-ts'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export default function Home() {
+  const [value, setValue] = useState<string>('')
+  const debouncedValue = useDebounce<string>(value, 1000)
   const dispatch = useDispatch()
   const favoritIds = useSelector((state) => state.favorit.contactIds)
-  const search = ''
 
   const contactConditions = {
     _or: [
-      { first_name: { _ilike: `%${search}%` } },
-      { last_name: { _ilike: `%${search}%` } },
-      { phones: { number: { _ilike: `%${search}%` } } }
+      { first_name: { _ilike: `%${debouncedValue}%` } },
+      { last_name: { _ilike: `%${debouncedValue}%` } },
+      { phones: { number: { _ilike: `%${debouncedValue}%` } } }
     ]
   }
 
@@ -73,6 +75,11 @@ export default function Home() {
       console.error('Error adding favorit:', error)
     }
   }
+
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setValue(event.target.value)
+  }
+
   const { favorit, regular } = data ?? { favorit: [], regular: [] }
   return (
     <>
@@ -83,6 +90,9 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className={`${inter.className}`}>
+        <div>
+          <input type="text" value={value} onChange={handleChange} />
+        </div>
         <div>favorit:</div>
         {favorit.map(({ id, first_name }) => (
           <div key={id}>
