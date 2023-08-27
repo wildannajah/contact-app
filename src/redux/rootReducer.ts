@@ -3,6 +3,7 @@ import { persistReducer } from 'redux-persist'
 import createWebStorage from 'redux-persist/lib/storage/createWebStorage'
 
 import favoritReducer from './slices/favorit'
+import currentContactReducer from './slices/current-contact'
 
 const createNoopStorage = () => ({
   async getItem(_key: string) {
@@ -30,6 +31,7 @@ const favoritPersistConfig = {
 }
 
 const rootReducer = combineReducers({
+  currentContact: currentContactReducer,
   favorit: persistReducer(favoritPersistConfig, favoritReducer)
 })
 

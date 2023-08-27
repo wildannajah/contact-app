@@ -7,17 +7,17 @@ import { useSelector } from '@/redux/store'
 import { type ChangeEvent, useEffect, useState } from 'react'
 import { useDebounce } from 'usehooks-ts'
 import ContactCard from '@/section/contact-list/contact-card'
-import Modal from 'react-modal'
-import FormContact from '@/section/contact-list/form-contact'
+import { Button, Stack, TextField, Typography } from '@mui/material'
+import FormContainer from '@/section/contact-list/form-container'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export default function Home() {
   const [value, setValue] = useState<string>('')
-  const [showModal, setShowModal] = useState(false)
+  const [formContract, setFormContract] = useState(false)
   const debouncedValue = useDebounce<string>(value, 1000)
   const favoritIds = useSelector((state) => state.favorit.contactIds)
-
+  // const currentContact = useSelector((state) => state.currentContact)
   const contactConditions = {
     _or: [
       { first_name: { _ilike: `%${debouncedValue}%` } },
@@ -67,6 +67,13 @@ export default function Home() {
   }
 
   const { favorit, regular } = data ?? { favorit: [], regular: [] }
+  if (formContract) {
+    return (
+      <div>
+        <FormContainer setFormContract={setFormContract} />
+      </div>
+    )
+  }
   return (
     <>
       <Head>
@@ -76,34 +83,47 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className={`${inter.className}`}>
-        <div>
-          <input type="text" value={value} onChange={handleChange} />
-        </div>
-        <div>favorit:</div>
-        {favorit.map((contact) => (
-          <ContactCard key={contact.id} contact={contact} favorit />
-        ))}
-        <div>regular:</div>
-        {regular.map((contact) => (
-          <ContactCard key={contact.id} contact={contact} favorit={false} />
-        ))}
-        <button
-          onClick={() => {
-            setShowModal((prevState) => !prevState)
-          }}
-        >
-          open modal
-        </button>
-        <Modal
-          isOpen={showModal}
-          onRequestClose={() => {
-            setShowModal(false)
-          }}
-          ariaHideApp={false}
-          contentLabel="Example Modal"
-        >
-          <FormContact />
-        </Modal>
+        <Stack spacing={1} padding={1} position={'relative'}>
+          <Typography variant="h5" fontWeight={'light'}>
+            Contacts
+          </Typography>
+          <TextField
+            id="outlined-basic"
+            label="Search"
+            variant="outlined"
+            fullWidth
+            size="small"
+            value={value}
+            onChange={handleChange}
+          />
+          <Stack spacing={1}>
+            <Typography>Favorit</Typography>
+            {favorit.map((contact) => (
+              <ContactCard
+                key={contact.id}
+                contact={contact}
+                favorit
+                setFormContract={setFormContract}
+              />
+            ))}
+            <Typography>Regular</Typography>
+            {regular.map((contact) => (
+              <ContactCard
+                key={contact.id}
+                contact={contact}
+                favorit={false}
+                setFormContract={setFormContract}
+              />
+            ))}
+          </Stack>
+          <Button
+            onClick={() => {
+              setFormContract(true)
+            }}
+          >
+            Create Contact
+          </Button>
+        </Stack>
       </main>
     </>
   )

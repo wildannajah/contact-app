@@ -14,3 +14,9 @@ export interface Contact {
 export interface Phone {
   number: string
 }
+export interface InitialStateContact {
+  first_name: string
+  id: number | null
+  last_name: string
+  phones: Phone[]
+}
