@@ -7,8 +7,9 @@ import { useSelector } from '@/redux/store'
 import { type ChangeEvent, useEffect, useState } from 'react'
 import { useDebounce } from 'usehooks-ts'
 import ContactCard from '@/section/contact-list/contact-card'
-import { Button, Stack, TextField, Typography } from '@mui/material'
+import { Button, Pagination, Stack, TextField, Typography } from '@mui/material'
 import FormContainer from '@/section/contact-list/form-container'
+import usePagination from '@/hooks/usePagination'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -17,6 +18,8 @@ export default function Home() {
   const [formContract, setFormContract] = useState(false)
   const debouncedValue = useDebounce<string>(value, 1000)
   const favoritIds = useSelector((state) => state.favorit.contactIds)
+  // const [page, setPage] = useState(1)
+  const { page, onChangePage } = usePagination()
   const contactConditions = {
     _or: [
       { first_name: { _ilike: `%${debouncedValue}%` } },
@@ -34,11 +37,11 @@ export default function Home() {
     ...contactConditions,
     id: { _nin: favoritIds }
   }
-
+  console.log(page)
   const { loading, error, data, refetch } = useQuery<ContactList>(GET_CONTACT_LIST, {
     variables: {
       limit: 10,
-      offset: 0,
+      offset: 10 * (page - 1),
       order_by: { created_at: 'asc' },
       where_favorit: favoriteContactConditions,
       where_regular: regularContactConditions
@@ -65,7 +68,8 @@ export default function Home() {
     setValue(event.target.value)
   }
 
-  const { favorit, regular } = data ?? { favorit: [], regular: [] }
+  const { favorit, regular, contact_aggregate } = data ?? { favorit: [], regular: [] }
+  const count = contact_aggregate?.aggregate.count ?? 10
   if (formContract) {
     return (
       <Stack padding={1}>
@@ -115,7 +119,17 @@ export default function Home() {
               />
             ))}
           </Stack>
+          <Stack display={'flex'} alignItems={'center'} width={'100%'}>
+            <Pagination
+              defaultPage={page}
+              count={Math.ceil(count / 10)}
+              variant="outlined"
+              shape="rounded"
+              onChange={onChangePage}
+            />
+          </Stack>
           <Button
+            variant="outlined"
             onClick={() => {
               setFormContract(true)
             }}

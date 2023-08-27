@@ -1,6 +1,7 @@
 export interface ContactList {
   favorit: Contact[]
   regular: Contact[]
+  contact_aggregate: ContactAggregate
 }
 
 export interface Contact {
@@ -56,4 +57,11 @@ export interface DeletePhone {
 
 export interface DeletePhoneByPk {
   contact: Contact
+}
+export interface ContactAggregate {
+  aggregate: Aggregate
+}
+
+export interface Aggregate {
+  count: number
 }
