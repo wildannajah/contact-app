@@ -1,14 +1,11 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { DELETE_CONTACT, GET_CONTACT_LIST } from '@/query'
 import { addFavorit, deleteFavorit } from '@/redux/slices/favorit'
 import { useDispatch } from '@/redux/store'
 import { type Contact } from '@/types/contact'
 import { useMutation } from '@apollo/client'
-import Modal from 'react-modal'
 import { useState } from 'react'
 import { Avatar, Box, IconButton, Menu, MenuItem, Stack, Typography } from '@mui/material'
 import Iconify from '@/components/Iconify'
-import FormContainer from './form-container'
 import { setCurrentContact } from '@/redux/slices/current-contact'
 
 interface ContactCardProps {
@@ -48,7 +45,6 @@ function stringAvatar(name: string) {
 
 export default function ContactCard({ contact, favorit, setFormContract }: ContactCardProps) {
   const { id, first_name, last_name, phones } = contact
-  const [showModal, setShowModal] = useState(false)
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -57,7 +53,7 @@ export default function ContactCard({ contact, favorit, setFormContract }: Conta
   const handleClose = () => {
     setAnchorEl(null)
   }
-  const [deleteContact, { data, loading, error }] = useMutation(DELETE_CONTACT, {
+  const [deleteContact, { loading, error }] = useMutation(DELETE_CONTACT, {
     refetchQueries: [GET_CONTACT_LIST]
   })
   const dispatch = useDispatch()
