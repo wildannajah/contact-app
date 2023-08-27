@@ -318,7 +318,7 @@ export default function ContactForm({ contact }: ContactFormProps) {
             variant="contained"
             loading={isSubmitting}
           >
-            Login
+            Submit
           </LoadingButton>
         </Stack>
       </FormProvider>
