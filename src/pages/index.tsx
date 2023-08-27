@@ -17,7 +17,6 @@ export default function Home() {
   const [formContract, setFormContract] = useState(false)
   const debouncedValue = useDebounce<string>(value, 1000)
   const favoritIds = useSelector((state) => state.favorit.contactIds)
-  // const currentContact = useSelector((state) => state.currentContact)
   const contactConditions = {
     _or: [
       { first_name: { _ilike: `%${debouncedValue}%` } },
@@ -69,9 +68,9 @@ export default function Home() {
   const { favorit, regular } = data ?? { favorit: [], regular: [] }
   if (formContract) {
     return (
-      <div>
+      <Stack padding={1}>
         <FormContainer setFormContract={setFormContract} />
-      </div>
+      </Stack>
     )
   }
   return (

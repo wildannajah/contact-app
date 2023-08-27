@@ -6,7 +6,7 @@ import { type Contact } from '@/types/contact'
 import { useMutation } from '@apollo/client'
 import Modal from 'react-modal'
 import { useState } from 'react'
-import { Avatar, Stack, Typography } from '@mui/material'
+import { Avatar, Box, IconButton, Menu, MenuItem, Stack, Typography } from '@mui/material'
 import Iconify from '@/components/Iconify'
 import FormContainer from './form-container'
 import { setCurrentContact } from '@/redux/slices/current-contact'
@@ -47,19 +47,35 @@ function stringAvatar(name: string) {
 }
 
 export default function ContactCard({ contact, favorit, setFormContract }: ContactCardProps) {
+  const { id, first_name, last_name, phones } = contact
   const [showModal, setShowModal] = useState(false)
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+  const open = Boolean(anchorEl)
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget)
+  }
+  const handleClose = () => {
+    setAnchorEl(null)
+  }
   const [deleteContact, { data, loading, error }] = useMutation(DELETE_CONTACT, {
     refetchQueries: [GET_CONTACT_LIST]
   })
   const dispatch = useDispatch()
-  const handleAddFavorit = (contact: number) => {
+  const handleAddFavorit = () => {
     try {
-      dispatch(addFavorit(contact))
+      dispatch(addFavorit(id))
     } catch (error) {
       console.error('Error adding favorit:', error)
     }
   }
-  const handleCurrentContact = () => {
+  const handleDeleteFavorit = () => {
+    try {
+      dispatch(deleteFavorit(id))
+    } catch (error) {
+      console.error('Error deleting favorit:', error)
+    }
+  }
+  const handleEditContact = () => {
     try {
       dispatch(setCurrentContact(contact))
       setFormContract(true)
@@ -67,11 +83,11 @@ export default function ContactCard({ contact, favorit, setFormContract }: Conta
       console.error('Error adding favorit:', error)
     }
   }
-  const handleDeleteFavorit = (contact: number) => {
+  const handleDeleteContact = async () => {
     try {
-      dispatch(deleteFavorit(contact))
+      await deleteContact({ variables: { id } })
     } catch (error) {
-      console.error('Error deleting favorit:', error)
+      console.error('Error adding favorit:', error)
     }
   }
 
@@ -79,11 +95,67 @@ export default function ContactCard({ contact, favorit, setFormContract }: Conta
 
   if (error != null) return <p>Error: {error.message}</p>
 
-  const { id, first_name, last_name, phones } = contact
+  const options = [
+    {
+      label: favorit ? 'Remove Favorit' : 'Add Favorit',
+      onClick: favorit ? handleDeleteFavorit : handleAddFavorit
+    },
+    {
+      label: 'Edit Contact',
+      onClick: handleEditContact
+    },
+    {
+      label: 'Delete Contact',
+      onClick: handleDeleteContact
+    }
+  ]
+
+  const ITEM_HEIGHT = 48
   return (
     <Stack spacing={1} display={'flex'} direction="row">
       <Avatar {...stringAvatar(`${first_name} ${last_name}`)} />
-      <Stack width={'100%'}>
+      <Stack justifyContent={'space-between'} display={'flex'} direction={'row'} width={'100%'}>
+        <Box>
+          <Typography variant="body1" alignItems={'center'} display={'flex'}>
+            {first_name} {last_name}
+          </Typography>
+          <Typography variant="body2">{phones[0]?.number}</Typography>
+        </Box>
+        <div>
+          <IconButton
+            aria-label="more"
+            id="long-button"
+            aria-controls={open ? 'long-menu' : undefined}
+            aria-expanded={open ? 'true' : undefined}
+            aria-haspopup="true"
+            onClick={handleClick}
+          >
+            <Iconify icon={'ic:baseline-more-vert'}></Iconify>
+          </IconButton>
+          <Menu
+            id="long-menu"
+            MenuListProps={{
+              'aria-labelledby': 'long-button'
+            }}
+            anchorEl={anchorEl}
+            open={open}
+            onClose={handleClose}
+            PaperProps={{
+              style: {
+                maxHeight: ITEM_HEIGHT * 4.5,
+                width: '20ch'
+              }
+            }}
+          >
+            {options.map((option) => (
+              <MenuItem key={option.label} onClick={option.onClick}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </Menu>
+        </div>
+      </Stack>
+      <Stack width={'100%'} display={'none'}>
         <Stack justifyContent={'space-between'} display={'flex'} direction={'row'} width={'100%'}>
           <Typography variant="body1" alignItems={'center'} display={'flex'}>
             {first_name} {last_name}
@@ -91,48 +163,40 @@ export default function ContactCard({ contact, favorit, setFormContract }: Conta
         </Stack>
         <Stack justifyContent={'space-between'} display={'flex'} direction={'row'} width={'100%'}>
           <Typography variant="body2">{phones[0]?.number}</Typography>
-          <Stack direction={'row'}>
-            <Typography variant="body2">
-              <Iconify
-                icon={favorit ? 'ic:baseline-star' : 'ic:baseline-star-border'}
-                onClick={() => {
-                  favorit ? handleDeleteFavorit(id) : handleAddFavorit(id)
-                }}
-              />
-            </Typography>
-            <Typography variant="body2">
-              <Iconify
-                icon={'ic:baseline-edit'}
-                onClick={() => {
-                  handleCurrentContact()
-                }}
-              />
-            </Typography>
-            <Typography variant="body2">
-              <Iconify
-                icon={'ic:baseline-delete'}
-                onClick={async () => await deleteContact({ variables: { id } })}
-              />
-            </Typography>
-          </Stack>
+          <div>
+            <IconButton
+              aria-label="more"
+              id="long-button"
+              aria-controls={open ? 'long-menu' : undefined}
+              aria-expanded={open ? 'true' : undefined}
+              aria-haspopup="true"
+              onClick={handleClick}
+            >
+              <Iconify icon={'ic:baseline-delete'}></Iconify>
+            </IconButton>
+            <Menu
+              id="long-menu"
+              MenuListProps={{
+                'aria-labelledby': 'long-button'
+              }}
+              anchorEl={anchorEl}
+              open={open}
+              onClose={handleClose}
+              PaperProps={{
+                style: {
+                  maxHeight: ITEM_HEIGHT * 4.5,
+                  width: '20ch'
+                }
+              }}
+            >
+              {options.map((option) => (
+                <MenuItem key={option.label} onClick={option.onClick}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </Menu>
+          </div>
         </Stack>
-      </Stack>
-      <Stack display={'none'}>
-        <button
-          onClick={() => {
-            favorit ? handleDeleteFavorit(id) : handleAddFavorit(id)
-          }}
-        >
-          {favorit ? 'remove' : 'add'}
-        </button>
-        <button
-          onClick={() => {
-            setShowModal((prevState) => !prevState)
-          }}
-        >
-          edit
-        </button>
-        <button onClick={async () => await deleteContact({ variables: { id } })}>delete</button>
       </Stack>
     </Stack>
   )
