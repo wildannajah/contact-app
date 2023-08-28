@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/indent */
 import { DELETE_CONTACT, GET_CONTACT_LIST } from '@/query'
 import { addFavorit, deleteFavorit } from '@/redux/slices/favorit'
 import { useDispatch } from '@/redux/store'
@@ -45,6 +46,7 @@ function stringAvatar(name: string) {
 
 export default function ContactCard({ contact, favorit, setFormContract }: ContactCardProps) {
   const { id, first_name, last_name, phones } = contact
+  const [showNumber, setShowNumber] = useState(false)
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -105,7 +107,9 @@ export default function ContactCard({ contact, favorit, setFormContract }: Conta
       onClick: handleDeleteContact
     }
   ]
-
+  const handleClickNumber = () => {
+    setShowNumber((prev) => !prev)
+  }
   const ITEM_HEIGHT = 48
   return (
     <Stack spacing={1} display={'flex'} direction="row">
@@ -115,7 +119,35 @@ export default function ContactCard({ contact, favorit, setFormContract }: Conta
           <Typography variant="body1" alignItems={'center'} display={'flex'}>
             {first_name} {last_name}
           </Typography>
-          <Typography variant="body2">{phones[0]?.number}</Typography>
+          <Typography
+            variant="body2"
+            onClick={() => {
+              handleClickNumber()
+            }}
+            sx={{ cursor: 'pointer' }}
+          >
+            {phones[0]?.number}
+          </Typography>
+          {showNumber
+            ? phones.map((phone, index) => {
+                if (index !== 0) {
+                  return (
+                    <Typography
+                      variant="body2"
+                      key={index}
+                      onClick={() => {
+                        handleClickNumber()
+                      }}
+                      sx={{ cursor: 'pointer' }}
+                    >
+                      {phone.number}
+                    </Typography>
+                  )
+                } else {
+                  return ''
+                }
+              })
+            : undefined}
         </Box>
         <div>
           <IconButton
