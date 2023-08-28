@@ -127,6 +127,7 @@ export default function ContactForm({ contact }: ContactFormProps) {
   const dispatch = useDispatch()
   const onSubmit = async (data: FormValuesProps) => {
     try {
+      const formatedLastName = data.last_name?.replace(/[^\w\s]|_+$/g, '')
       if (contact.id != null) {
         const newChanges: {
           added: Phone[]
@@ -191,7 +192,7 @@ export default function ContactForm({ contact }: ContactFormProps) {
           const refetchResult = await refetch({
             where: {
               first_name: { _eq: data.first_name },
-              last_name: { _eq: data.last_name }
+              last_name: { _eq: formatedLastName }
             }
           })
           if (refetchResult.data.contact.length > 0) {
@@ -202,7 +203,7 @@ export default function ContactForm({ contact }: ContactFormProps) {
             const result = await EditContact({
               variables: {
                 id: contact.id,
-                _set: { first_name: data.first_name, last_name: data.last_name }
+                _set: { first_name: data.first_name, last_name: formatedLastName }
               }
             })
             if (result.data != null) {
@@ -215,7 +216,7 @@ export default function ContactForm({ contact }: ContactFormProps) {
         const refetchResult = await refetch({
           where: {
             first_name: { _eq: data.first_name },
-            last_name: { _eq: data.last_name }
+            last_name: { _eq: formatedLastName }
           }
         })
         if (refetchResult.data.contact_aggregate.aggregate.count > 0) {
