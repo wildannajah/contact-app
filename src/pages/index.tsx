@@ -22,7 +22,7 @@ export default function Home() {
   const isDesktop = useResponsive('up', 'md')
   const [value, setValue] = useState<string>('')
   const [formContract, setFormContract] = useState(false)
-  const debouncedValue = useDebounce<string>(value, 1000)
+  const debouncedValue = useDebounce<string>(value, 5000)
   const favoritIds = useSelector((state) => state.favorit.contactIds)
   // const [page, setPage] = useState(1)
   const { page, onChangePage } = usePagination()
