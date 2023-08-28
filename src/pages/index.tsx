@@ -5,32 +5,43 @@ import { GET_CONTACT_LIST } from '@/query'
 import { useQuery } from '@apollo/client'
 import { type ContactList } from '@/types/contact'
 import { useDispatch, useSelector } from '@/redux/store'
-import { type ChangeEvent, useEffect, useState } from 'react'
-import { useDebounce } from 'usehooks-ts'
+import { useEffect, useState } from 'react'
 import ContactCard from '@/section/contact-list/contact-card'
-import { Grid, IconButton, Pagination, Stack, TextField, Typography } from '@mui/material'
+import {
+  Alert,
+  Grid,
+  IconButton,
+  InputAdornment,
+  Pagination,
+  Stack,
+  Typography
+} from '@mui/material'
 import FormContainer from '@/section/contact-list/form-container'
 import usePagination from '@/hooks/usePagination'
 import useResponsive from '@/hooks/useResponsive'
 import Iconify from '@/components/Iconify'
 import { resetCurrentContact } from '@/redux/slices/current-contact'
+import FormProvider from '@/components/hook-form/FormProvider'
+import { useForm } from 'react-hook-form'
+import { RHFTextField } from '@/components/hook-form'
 
 const inter = Inter({ subsets: ['latin'] })
-
+interface FormValuesProps {
+  search: string
+  afterSubmit?: string
+}
 export default function Home() {
   const dispatch = useDispatch()
   const isDesktop = useResponsive('up', 'md')
   const [value, setValue] = useState<string>('')
   const [formContract, setFormContract] = useState(false)
-  const debouncedValue = useDebounce<string>(value, 5000)
   const favoritIds = useSelector((state) => state.favorit.contactIds)
-  // const [page, setPage] = useState(1)
   const { page, onChangePage } = usePagination()
   const contactConditions = {
     _or: [
-      { first_name: { _ilike: `%${debouncedValue}%` } },
-      { last_name: { _ilike: `%${debouncedValue}%` } },
-      { phones: { number: { _ilike: `%${debouncedValue}%` } } }
+      { first_name: { _ilike: `%${value}%` } },
+      { last_name: { _ilike: `%${value}%` } },
+      { phones: { number: { _ilike: `%${value}%` } } }
     ]
   }
 
@@ -64,14 +75,28 @@ export default function Home() {
     }
     void refetching()
   }, [error, favoritIds, refetch])
+  const methods = useForm<FormValuesProps>()
+
+  const {
+    reset,
+    setError,
+    handleSubmit,
+    formState: { errors }
+  } = methods
+
+  const onSubmit = async (data: FormValuesProps) => {
+    try {
+      setValue(data.search)
+    } catch (error: any) {
+      reset()
+
+      setError('afterSubmit', { ...error, message: error.message })
+    }
+  }
 
   if (loading) return <p>Loading...</p>
 
   if (error != null) return <p>Error: {error.message}</p>
-
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setValue(event.target.value)
-  }
 
   const { favorit, regular, contact_aggregate } = data ?? { favorit: [], regular: [] }
   const count = contact_aggregate?.aggregate.count ?? 10
@@ -98,15 +123,26 @@ export default function Home() {
             <Iconify icon={'ei:plus'} fontSize={30} />
           </IconButton>
         </Stack>
-        <TextField
-          id="outlined-basic"
-          label="Search"
-          variant="outlined"
-          fullWidth
-          size="small"
-          value={value}
-          onChange={handleChange}
-        />
+        <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
+          {!(errors.afterSubmit == null) && (
+            <Alert severity="error">{errors.afterSubmit.message}</Alert>
+          )}
+          <RHFTextField
+            name="search"
+            placeholder="Cari Barangmu disini"
+            type="text"
+            fullWidth
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton edge="end" type="submit">
+                    <Iconify icon="bx:search" />
+                  </IconButton>
+                </InputAdornment>
+              )
+            }}
+          />
+        </FormProvider>
         <Stack spacing={1}>
           <Typography>Favorit</Typography>
           {favorit.map((contact) => (

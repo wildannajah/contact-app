@@ -103,7 +103,6 @@ export default function ContactForm({ contact }: ContactFormProps) {
     resolver: yupResolver(ContactSchema),
     defaultValues
   })
-  console.log(contact.id)
   const {
     control,
     reset,
