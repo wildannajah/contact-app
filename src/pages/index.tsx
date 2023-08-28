@@ -129,7 +129,7 @@ export default function Home() {
           )}
           <RHFTextField
             name="search"
-            placeholder="Cari Barangmu disini"
+            placeholder="Search"
             type="text"
             fullWidth
             InputProps={{
