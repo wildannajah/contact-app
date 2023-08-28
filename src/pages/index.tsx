@@ -4,18 +4,21 @@ import { Inter } from 'next/font/google'
 import { GET_CONTACT_LIST } from '@/query'
 import { useQuery } from '@apollo/client'
 import { type ContactList } from '@/types/contact'
-import { useSelector } from '@/redux/store'
+import { useDispatch, useSelector } from '@/redux/store'
 import { type ChangeEvent, useEffect, useState } from 'react'
 import { useDebounce } from 'usehooks-ts'
 import ContactCard from '@/section/contact-list/contact-card'
-import { Button, Grid, Pagination, Stack, TextField, Typography } from '@mui/material'
+import { Grid, IconButton, Pagination, Stack, TextField, Typography } from '@mui/material'
 import FormContainer from '@/section/contact-list/form-container'
 import usePagination from '@/hooks/usePagination'
 import useResponsive from '@/hooks/useResponsive'
+import Iconify from '@/components/Iconify'
+import { resetCurrentContact } from '@/redux/slices/current-contact'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export default function Home() {
+  const dispatch = useDispatch()
   const isDesktop = useResponsive('up', 'md')
   const [value, setValue] = useState<string>('')
   const [formContract, setFormContract] = useState(false)
@@ -82,9 +85,19 @@ export default function Home() {
   const ContactList = () => {
     return (
       <Stack spacing={1} padding={2} position={'relative'}>
-        <Typography variant="h5" fontWeight={'light'}>
-          Contacts
-        </Typography>
+        <Stack direction={'row'} justifyContent={'space-between'}>
+          <Typography variant="h5" fontWeight={'light'}>
+            Contacts
+          </Typography>
+          <IconButton
+            onClick={() => {
+              dispatch(resetCurrentContact())
+              setFormContract(true)
+            }}
+          >
+            <Iconify icon={'ei:plus'} fontSize={30} />
+          </IconButton>
+        </Stack>
         <TextField
           id="outlined-basic"
           label="Search"
@@ -123,14 +136,6 @@ export default function Home() {
             onChange={onChangePage}
           />
         </Stack>
-        <Button
-          variant="outlined"
-          onClick={() => {
-            setFormContract(true)
-          }}
-        >
-          Create Contact
-        </Button>
       </Stack>
     )
   }
