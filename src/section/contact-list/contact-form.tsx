@@ -191,22 +191,33 @@ export default function ContactForm({ contact }: ContactFormProps) {
           })
           if (refetchResult.data.contact[0].id !== contact.id) {
             setError('afterSubmit', { ...error, message: 'Contact name must be unique' })
-          }
-          const result = await EditContact({
-            variables: {
-              id: contact.id,
-              _set: { first_name: data.first_name, last_name: data.last_name }
+          } else {
+            const result = await EditContact({
+              variables: {
+                id: contact.id,
+                _set: { first_name: data.first_name, last_name: data.last_name }
+              }
+            })
+            if (result.data != null) {
+              const { first_name, last_name, phones, id } = result.data.update_contact_by_pk
+              dispatch(setCurrentContact({ id, first_name, last_name, phones }))
             }
-          })
-          if (result.data != null) {
-            const { first_name, last_name, phones, id } = result.data.update_contact_by_pk
-            dispatch(setCurrentContact({ id, first_name, last_name, phones }))
           }
         }
       } else {
-        await createContact({
-          variables: { ...data }
+        const refetchResult = await refetch({
+          where: {
+            first_name: { _eq: data.first_name },
+            last_name: { _eq: data.last_name }
+          }
         })
+        if (refetchResult.data.contact_aggregate.aggregate.count > 0) {
+          setError('afterSubmit', { ...error, message: 'Contact name must be unique' })
+        } else {
+          await createContact({
+            variables: { ...data }
+          })
+        }
       }
     } catch (error: any) {
       console.error(error)
