@@ -35,7 +35,7 @@ interface ContactFormProps {
 
 interface FormValuesProps {
   first_name: string
-  last_name: string
+  last_name?: string
   phones: Phone[]
   afterSubmit?: string
 }
@@ -89,9 +89,6 @@ export default function ContactForm({ contact }: ContactFormProps) {
   const ContactSchema = Yup.object().shape({
     first_name: Yup.string()
       .required('First Name is required')
-      .matches(/^[a-zA-Z0-9]+$/, '* This field cannot contain white space and special character'),
-    last_name: Yup.string()
-      .required('Last Name is required')
       .matches(/^[a-zA-Z0-9]+$/, '* This field cannot contain white space and special character'),
     phones: Yup.array()
       .of(
