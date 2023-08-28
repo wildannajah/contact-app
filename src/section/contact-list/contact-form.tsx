@@ -1,6 +1,7 @@
 /* eslint-disable array-callback-return */
 import Iconify from '@/components/Iconify'
 import { FormProvider, RHFTextField } from '@/components/hook-form'
+import useResponsive from '@/hooks/useResponsive'
 import {
   ADD_NUMBER_TO_CONTACT,
   CREATE_CONTACT,
@@ -23,7 +24,7 @@ import {
 import { useMutation, useQuery } from '@apollo/client'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { LoadingButton } from '@mui/lab'
-import { Stack, InputAdornment, IconButton, Alert } from '@mui/material'
+import { Stack, InputAdornment, IconButton, Alert, Button } from '@mui/material'
 import { type ChangeEvent } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
 import * as Yup from 'yup'
@@ -45,6 +46,7 @@ interface Changes {
 }
 
 export default function ContactForm({ contact }: ContactFormProps) {
+  const isDesktop = useResponsive('up', 'md')
   const [createContact, { loading, error }] = useMutation<AddContactWithPhones>(CREATE_CONTACT, {
     refetchQueries: [GET_CONTACT_LIST]
   })
@@ -327,23 +329,20 @@ export default function ContactForm({ contact }: ContactFormProps) {
               />
             ))}
           </Stack>
-          <button
-            type="button"
-            onClick={() => {
-              append({ number: '' })
-            }}
-          >
-            Add Phone Number
-          </button>
-          <LoadingButton
-            fullWidth
-            size="large"
-            type="submit"
-            variant="contained"
-            loading={isSubmitting}
-          >
-            Submit
-          </LoadingButton>
+          <Stack spacing={1} direction={isDesktop === true ? 'row' : 'column'} paddingY={1}>
+            <Button
+              fullWidth
+              variant="contained"
+              onClick={() => {
+                append({ number: '' })
+              }}
+            >
+              Add Phone Number
+            </Button>
+            <LoadingButton fullWidth type="submit" variant="contained" loading={isSubmitting}>
+              Submit
+            </LoadingButton>
+          </Stack>
         </Stack>
       </FormProvider>
     </div>

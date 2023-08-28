@@ -40,9 +40,6 @@ export default function FormContainer({ setFormContract }: FormContactProps) {
           </IconButton>
           <Typography>{data.id !== null ? 'Edit Contact' : 'Create Contact'}</Typography>
         </Stack>
-        <IconButton>
-          <Iconify icon={'ic:baseline-check'} />
-        </IconButton>
       </Box>
       <Box justifyContent={'center'} display={'flex'}>
         <Iconify icon={'fluent:person-circle-28-regular'} fontSize={'100px'} />

@@ -1,3 +1,4 @@
+/* eslint-disable multiline-ternary */
 import Head from 'next/head'
 import { Inter } from 'next/font/google'
 import { GET_CONTACT_LIST } from '@/query'
@@ -7,13 +8,15 @@ import { useSelector } from '@/redux/store'
 import { type ChangeEvent, useEffect, useState } from 'react'
 import { useDebounce } from 'usehooks-ts'
 import ContactCard from '@/section/contact-list/contact-card'
-import { Button, Pagination, Stack, TextField, Typography } from '@mui/material'
+import { Button, Grid, Pagination, Stack, TextField, Typography } from '@mui/material'
 import FormContainer from '@/section/contact-list/form-container'
 import usePagination from '@/hooks/usePagination'
+import useResponsive from '@/hooks/useResponsive'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export default function Home() {
+  const isDesktop = useResponsive('up', 'md')
   const [value, setValue] = useState<string>('')
   const [formContract, setFormContract] = useState(false)
   const debouncedValue = useDebounce<string>(value, 1000)
@@ -69,10 +72,65 @@ export default function Home() {
 
   const { favorit, regular, contact_aggregate } = data ?? { favorit: [], regular: [] }
   const count = contact_aggregate?.aggregate.count ?? 10
-  if (formContract) {
+  if (formContract && isDesktop === false) {
     return (
       <Stack padding={1}>
         <FormContainer setFormContract={setFormContract} />
+      </Stack>
+    )
+  }
+  const ContactList = () => {
+    return (
+      <Stack spacing={1} padding={2} position={'relative'}>
+        <Typography variant="h5" fontWeight={'light'}>
+          Contacts
+        </Typography>
+        <TextField
+          id="outlined-basic"
+          label="Search"
+          variant="outlined"
+          fullWidth
+          size="small"
+          value={value}
+          onChange={handleChange}
+        />
+        <Stack spacing={1}>
+          <Typography>Favorit</Typography>
+          {favorit.map((contact) => (
+            <ContactCard
+              key={contact.id}
+              contact={contact}
+              favorit
+              setFormContract={setFormContract}
+            />
+          ))}
+          <Typography>Regular</Typography>
+          {regular.map((contact) => (
+            <ContactCard
+              key={contact.id}
+              contact={contact}
+              favorit={false}
+              setFormContract={setFormContract}
+            />
+          ))}
+        </Stack>
+        <Stack display={'flex'} alignItems={'center'} width={'100%'}>
+          <Pagination
+            defaultPage={page}
+            count={Math.ceil(count / 10)}
+            variant="outlined"
+            shape="rounded"
+            onChange={onChangePage}
+          />
+        </Stack>
+        <Button
+          variant="outlined"
+          onClick={() => {
+            setFormContract(true)
+          }}
+        >
+          Create Contact
+        </Button>
       </Stack>
     )
   }
@@ -85,57 +143,18 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className={`${inter.className}`}>
-        <Stack spacing={1} padding={1} position={'relative'}>
-          <Typography variant="h5" fontWeight={'light'}>
-            Contacts
-          </Typography>
-          <TextField
-            id="outlined-basic"
-            label="Search"
-            variant="outlined"
-            fullWidth
-            size="small"
-            value={value}
-            onChange={handleChange}
-          />
-          <Stack spacing={1}>
-            <Typography>Favorit</Typography>
-            {favorit.map((contact) => (
-              <ContactCard
-                key={contact.id}
-                contact={contact}
-                favorit
-                setFormContract={setFormContract}
-              />
-            ))}
-            <Typography>Regular</Typography>
-            {regular.map((contact) => (
-              <ContactCard
-                key={contact.id}
-                contact={contact}
-                favorit={false}
-                setFormContract={setFormContract}
-              />
-            ))}
-          </Stack>
-          <Stack display={'flex'} alignItems={'center'} width={'100%'}>
-            <Pagination
-              defaultPage={page}
-              count={Math.ceil(count / 10)}
-              variant="outlined"
-              shape="rounded"
-              onChange={onChangePage}
-            />
-          </Stack>
-          <Button
-            variant="outlined"
-            onClick={() => {
-              setFormContract(true)
-            }}
-          >
-            Create Contact
-          </Button>
-        </Stack>
+        <Grid container>
+          <Grid item xs={12} md={4}>
+            <ContactList />
+          </Grid>
+          {isDesktop === true && formContract ? (
+            <Grid item md={8}>
+              <Stack padding={1}>
+                <FormContainer setFormContract={setFormContract} />
+              </Stack>
+            </Grid>
+          ) : undefined}
+        </Grid>
       </main>
     </>
   )
