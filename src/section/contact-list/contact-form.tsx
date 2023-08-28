@@ -25,7 +25,7 @@ import { useMutation, useQuery } from '@apollo/client'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { LoadingButton } from '@mui/lab'
 import { Stack, InputAdornment, IconButton, Alert, Button } from '@mui/material'
-import { type ChangeEvent } from 'react'
+import { useEffect, type ChangeEvent } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
 import * as Yup from 'yup'
 
@@ -120,6 +120,12 @@ export default function ContactForm({ contact }: ContactFormProps) {
     control,
     name: 'phones'
   })
+
+  useEffect(() => {
+    setValue('first_name', first_name)
+    setValue('last_name', last_name)
+    setValue('phones', phones)
+  }, [first_name, last_name, phones, setValue])
 
   const dispatch = useDispatch()
   const onSubmit = async (data: FormValuesProps) => {
