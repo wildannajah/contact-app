@@ -37,7 +37,6 @@ export default function Home() {
     ...contactConditions,
     id: { _nin: favoritIds }
   }
-  console.log(page)
   const { loading, error, data, refetch } = useQuery<ContactList>(GET_CONTACT_LIST, {
     variables: {
       limit: 10,
