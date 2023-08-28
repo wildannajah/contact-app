@@ -106,7 +106,7 @@ export default function ContactForm({ contact }: ContactFormProps) {
     resolver: yupResolver(ContactSchema),
     defaultValues
   })
-
+  console.log(contact.id)
   const {
     control,
     reset,
@@ -197,8 +197,10 @@ export default function ContactForm({ contact }: ContactFormProps) {
               last_name: { _eq: data.last_name }
             }
           })
-          if (refetchResult.data.contact[0].id !== contact.id) {
-            setError('afterSubmit', { ...error, message: 'Contact name must be unique' })
+          if (refetchResult.data.contact.length > 0) {
+            if (refetchResult.data.contact[0].id !== contact.id) {
+              setError('afterSubmit', { ...error, message: 'Contact name must be unique' })
+            }
           } else {
             const result = await EditContact({
               variables: {
